@@ -16,11 +16,11 @@ MAX_LIVES = 3
 INVINCIBLE_FRAMES = 90
 
 ASSETS = {
-    "background": os.path.join(BASE_DIR, "background_test.png"),
+    "background": os.path.join(BASE_DIR, "background.png"),
     "player": os.path.join(BASE_DIR, "player.png"),
-    "wall": os.path.join(BASE_DIR, "wall.png"),
-    "hurt": os.path.join(BASE_DIR, "hurt.png"),
-    "gold": os.path.join(BASE_DIR, "gold.png"),
+    "ABC": os.path.join(BASE_DIR, "ABC.png"),
+    "CCB": os.path.join(BASE_DIR, "CCB.png"),
+    "ICBC": os.path.join(BASE_DIR, "ICBC.png"),
 }
 RANKING_FILE = os.path.join(BASE_DIR, "ranking.csv")
 
@@ -40,33 +40,33 @@ DIFFICULTIES = {
         "speed": 5,
         "spawn_min": 1500,
         "spawn_max": 2600,
-        "wall_prob": 0.55,
-        "hurt_prob": 0.15,
-        "gold_prob": 0.30,
-        "hurt_extra": 3,
-        "gold_extra": 2,
+        "ABC_prob": 0.55,
+        "CCB_prob": 0.15,
+        "ICBC_prob": 0.30,
+        "CCB_extra": 3,
+        "ICBC_extra": 2,
     },
     "medium": {
         "name": "中等",
         "speed": 8,
         "spawn_min": 1100,
         "spawn_max": 2000,
-        "wall_prob": 0.40,
-        "hurt_prob": 0.35,
-        "gold_prob": 0.25,
-        "hurt_extra": 5,
-        "gold_extra": 3,
+        "ABC_prob": 0.40,
+        "CCB_prob": 0.35,
+        "ICBC_prob": 0.25,
+        "CCB_extra": 5,
+        "ICBC_extra": 3,
     },
     "hard": {
         "name": "困难",
         "speed": 12,
         "spawn_min": 700,
         "spawn_max": 1400,
-        "wall_prob": 0.30,
-        "hurt_prob": 0.50,
-        "gold_prob": 0.20,
-        "hurt_extra": 7,
-        "gold_extra": 4,
+        "ABC_prob": 0.30,
+        "CCB_prob": 0.50,
+        "ICBC_prob": 0.20,
+        "CCB_extra": 7,
+        "ICBC_extra": 4,
     },
 }
 
@@ -258,7 +258,7 @@ class InputBox:
 class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("跳跃游戏")
+        pygame.display.set_caption("ICBC")
         self.clock = pygame.time.Clock()
         self.font_large = pygame.font.SysFont("simhei", 64)
         self.font_medium = pygame.font.SysFont("simhei", 36)
@@ -269,9 +269,9 @@ class Game:
         self.bg = pygame.transform.smoothscale(self.bg, (self.bg.get_width(), SCREEN_HEIGHT))
         self.bg_width = self.bg.get_width()
         self.player_img = load_image(ASSETS["player"], (80, 80))
-        self.wall_img = load_image(ASSETS["wall"], (80, 80))
-        self.hurt_img = load_image(ASSETS["hurt"], (70, 70))
-        self.gold_img = load_image(ASSETS["gold"], (60, 60))
+        self.ABC_img = load_image(ASSETS["ABC"], (80, 80))
+        self.CCB_img = load_image(ASSETS["CCB"], (70, 70))
+        self.ICBC_img = load_image(ASSETS["ICBC"], (60, 60))
         # 圆形碰撞体半径（比外接矩形更宽容，操作手感更好）
         self.player_radius = min(self.player_img.get_size()) * 0.38
 
@@ -360,31 +360,31 @@ class Game:
 
     def spawn_object(self):
         cfg = DIFFICULTIES[self.difficulty]
-        choices = ["wall"] * int(cfg["wall_prob"] * 100) + \
-                  ["hurt"] * int(cfg["hurt_prob"] * 100) + \
-                  ["gold"] * int(cfg["gold_prob"] * 100)
-        obj_type = random.choice(choices) if choices else "wall"
+        choices = ["ABC"] * int(cfg["ABC_prob"] * 100) + \
+                  ["CCB"] * int(cfg["CCB_prob"] * 100) + \
+                  ["ICBC"] * int(cfg["ICBC_prob"] * 100)
+        obj_type = random.choice(choices) if choices else "ABC"
 
         x = SCREEN_WIDTH + random.randint(20, 200)
-        ground_top = GROUND_Y - self.wall_img.get_height()
+        ground_top = GROUND_Y - self.ABC_img.get_height()
         sky_top = GROUND_Y - self.player_img.get_height() - 160
 
-        if obj_type == "wall":
+        if obj_type == "ABC":
             y = ground_top
             speed = self.world_speed
-            img = self.wall_img
-            radius = min(self.wall_img.get_size()) * 0.36
-        elif obj_type == "hurt":
+            img = self.ABC_img
+            radius = min(self.ABC_img.get_size()) * 0.36
+        elif obj_type == "CCB":
             y = random.choice([ground_top + 10, sky_top])
-            speed = self.world_speed + cfg["hurt_extra"]
-            img = self.hurt_img
-            radius = min(self.hurt_img.get_size()) * 0.36
+            speed = self.world_speed + cfg["CCB_extra"]
+            img = self.CCB_img
+            radius = min(self.CCB_img.get_size()) * 0.36
         else:  # gold
             y = random.choice([ground_top + 15, sky_top + 20])
-            speed = self.world_speed + cfg["gold_extra"]
-            img = self.gold_img
+            speed = self.world_speed + cfg["ICBC_extra"]
+            img = self.ICBC_img
             # 金币拾取判定放宽一点，手感更好
-            radius = min(self.gold_img.get_size()) * 0.5 + 6
+            radius = min(self.ICBC_img.get_size()) * 0.5 + 6
 
         self.obstacles.append(GameObject(obj_type, img, x, y, speed, radius))
 
@@ -459,7 +459,7 @@ class Game:
         for obj in self.obstacles:
             obj.update()
             if circles_overlap(player_center, self.player_radius, obj.center, obj.radius):
-                if obj.type == "gold":
+                if obj.type == "ICBC":
                     self.coins += 1
                     self.spawn_coin_effect(*obj.center)
                     continue  # 金币被吃掉，直接移除
